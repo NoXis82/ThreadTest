@@ -1,13 +1,14 @@
 import kotlin.concurrent.thread
 
 fun main() {
+    val resource = Any()
     val consumerA = Consumer("A")
     val consumerB = Consumer("B")
     val t1 = thread {
-        consumerA.lockFirstAndTrySecond()
+        consumerA.lockFirstAndTrySecond(resource)
     }
     val t2 = thread {
-        consumerB.lockFirstAndTrySecond()
+        consumerB.lockFirstAndTrySecond(resource)
     }
     t1.join()
     t2.join()
@@ -15,13 +16,15 @@ fun main() {
 }
 
 class Consumer(private val name: String) {
-    fun lockFirstAndTrySecond() {
-        println("$name locked first, sleep and wait for second")
-        Thread.sleep(1000)
-        lockSecond()
+
+    fun lockFirstAndTrySecond(resource: Any) {
+        synchronized(resource) {
+            println("$name locked first, sleep and wait for second")
+            Thread.sleep(1000)
+            lockSecond()
+        }
     }
 
-    @Synchronized
     fun lockSecond() {
         println("$name locked second")
     }
